@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>CAT BKN Firebase Pro</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial;
+}
+
+body{
+background:#f4f6fb;
+}
+
+/* HEADER */
+
+.header{
+height:80px;
+background:white;
+border-bottom:3px solid #e53935;
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:0 25px;
+}
+
+.logo-area{
+display:flex;
+align-items:center;
+gap:15px;
+}
+
+.logo-area img{
+width:55px;
+}
+
+.logo-area h2{
+color:#c62828;
+font-size:32px;
+}
+
+.timer-box{
+position:absolute;
+right:20px;
+top:8px;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+width:150px;
+z-index:20;
+}
+
+/* LAYOUT */
+
+.container{
+display:flex;
+gap:20px;
+padding:20px;
+}
+
+/* LEFT */
+
+.left-panel{
+width:280px;
+background:white;
+border-radius:18px;
+padding:20px;
+box-shadow:0 4px 15px rgba(0,0,0,.08);
+}
+
+.left-panel h3{
+color:#d32f2f;
+margin-bottom:15px;
+}
+
+.nav-grid{
+display:grid;
+grid-template-columns:repeat(5,1fr);
+gap:10px;
+}
+
+.nav-grid button{
+height:48px;
+border:none;
+border-radius:12px;
+font-weight:bold;
+cursor:pointer;
+background:#eee;
+transition:.2s;
+}
+
+.nav-grid button:hover{
+transform:scale(1.05);
+}
+
+.active{
+background:#1976d2 !important;
+color:white;
+}
+
+.done{
+background:#4caf50 !important;
+color:white;
+}
+
+/* CENTER */
+
+.center-panel{
+flex:1;
+}
+
+.question-box{
+background:white;
+padding:18px;
+border-radius:14px;
+box-shadow:0 2px 8px rgba(0,0,0,.08);
+margin-bottom:15px;
+max-width:1000px;
+}
+
+.question-title{
+font-size:16px;
+font-weight:700;
+color:#111;
+line-height:1.5;
+margin-bottom:15px;
+}
+
+.option{
+font-size:16px;
+color:#111;
+line-height:1.5;
+padding:14px 16px;
+border:1px solid #ddd;
+border-radius:10px;
+margin-bottom:10px;
+cursor:pointer;
+transition:.2s;
+background:#fff;
+}
+
+.option:hover{
+background:#f3f8ff;
+border-color:#1976d2;
+}
+
+.option.selected{
+background:#d32f2f;
+color:white;
+border-color:#d32f2f;
+}
+
+.btn-area{
+display:flex;
+gap:10px;
+margin-top:20px;
+justify-content:flex-start;
+align-items:center;
+flex-wrap:wrap;
+}
+
+.btn{
+padding:15px 26px;
+border:none;
+border-radius:14px;
+font-size:16px;
+font-weight:bold;
+cursor:pointer;
+transition:.2s;
+min-width:190px;
+box-shadow:0 4px 10px rgba(0,0,0,.1);
+}
+
+.btn:hover{
+transform:translateY(-2px);
+}
+
+.prev{
+background:#757575;
+color:white;
+}
+
+.next{
+background:#1976d2;
+color:white;
+}
+
+.finish{
+width:150px;
+height:42px;
+border:none;
+background:#d32f2f;
+color:#fff;
+font-size:15px;
+font-weight:700;
+border-radius:12px;
+cursor:pointer;
+padding:0;
+margin:0;
+box-shadow:0 3px 10px rgba(0,0,0,.12);
+}
+
+.finish:hover{
+transform:translateY(-2px);
+background:#b71c1c;
+}
+
+/* RIGHT */
+
+.right-panel{
+width:100%;
+display:flex;
+justify-content:center;
+margin-top:20px;
+}
+
+.card{
+background:white;
+padding:30px;
+border-radius:22px;
+box-shadow:0 4px 18px rgba(0,0,0,.08);
+text-align:center;
+width:100%;
+max-width:1000px;
+margin:auto;
+}
+
+.card h3{
+margin-bottom:15px;
+color:#d32f2f;
+}
+
+.rank-item{
+display:flex;
+justify-content:space-between;
+padding:10px 0;
+border-bottom:1px solid #eee;
+font-weight:bold;
+}
+
+.score-box{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:15px;
+margin-top:20px;
+}
+
+.score-card{
+padding:20px;
+border-radius:15px;
+text-align:center;
+font-weight:bold;
+}
+
+.green{
+background:#e8f5e9;
+color:#2e7d32;
+}
+
+.red{
+background:#ffebee;
+color:#c62828;
+}
+
+.orange{
+background:#fff3e0;
+color:#ef6c00;
+}
+
+#chart{
+max-width:300px;
+max-height:300px;
+margin:20px auto;
+display:block;
+}
+
+.result-list{
+margin-top:15px;
+line-height:1.8;
+}
+
+.watermark{
+position:fixed;
+bottom:8px;
+left:-100%;
+
+font-size:12px;
+font-weight:700;
+color:#d32f2f;
+
+white-space:nowrap;
+pointer-events:none;
+user-select:none;
+
+opacity:.12;
+
+/* supaya tidak nutup panel */
+z-index:-999;
+
+animation:waterjalan 40s linear infinite;
+}
+
+/* ANIMASI BERJALAN */
+@keyframes waterjalan{
+
+0%{
+transform:translateX(0);
+}
+
+100%{
+transform:translateX(220vw);
+}
+
+}
+
+/* ===== PANEL TIMER ===== */
+
+/* TIMER */
+#timer{
+width:150px;
+height:48px;
+display:flex;
+align-items:center;
+justify-content:center;
+background:#fff;
+border:2px solid #d32f2f;
+border-radius:12px;
+font-size:24px;
+font-weight:700;
+color:#d32f2f;
+box-shadow:0 3px 10px rgba(0,0,0,.08);
+margin-bottom:5px;
+}
+
+/* TOMBOL AKHIRI */
+
+.action-buttons{
+    display:flex;
+    justify-content:flex-start;
+    gap:14px;
+    margin-top:25px;
+}
+
+.action-buttons button{
+    min-width:180px;
+    height:50px;
+    border:none;
+    border-radius:12px;
+    font-weight:700;
+    cursor:pointer;
+}
+
+@media(max-width:768px){
+
+.header{
+flex-direction:column;
+height:auto;
+padding:15px;
+gap:15px;
+}
+
+.container{
+flex-direction:column;
+}
+
+.left-panel{
+width:100%;
+}
+
+.question-box{
+padding:18px;
+}
+
+.option{
+font-size:16px;
+padding:15px;
+}
+
+#timer{
+width:160px;
+font-size:24px;
+height:60px;
+}
+
+.finish{
+width:170px !important;
+height:44px !important;
+padding:0 !important;
+font-size:16px;
+font-weight:600;
+border:none;
+border-radius:12px;
+background:#d32f2f;
+color:#fff;
+margin-top:8px;
+box-sizing:border-box;
+}
+
+.btn{
+width:100%;
+min-width:auto;
+}
+
+.score-box{
+grid-template-columns:1fr;
+}
+
+#chart{
+max-width:220px;
+max-height:220px;
+}
+
+}
+
+@media(max-width:768px){
+
+.timer-box{
+position:relative;
+right:auto;
+top:auto;
+margin:auto;
+margin-top:10px;
+}
+
+.header{
+flex-direction:column;
+align-items:flex-start;
+height:auto;
+padding:15px;
+}
+
+.logo-area h2{
+font-size:24px;
+}
+
+.container{
+flex-direction:column;
+padding:10px;
+}
+
+.left-panel{
+width:100%;
+}
+
+.question-box{
+padding:18px;
+}
+
+.option{
+font-size:17px;
+padding:14px;
+}
+
+.btn-area{
+flex-direction:column;
+}
+
+.btn{
+width:100%;
+}
+
+.score-box{
+grid-template-columns:1fr;
+}
+
+.card{
+padding:20px;
+}
+
+#chart{
+width:230px !important;
+height:230px !important;
+}
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+
+<div class="logo-area">
+<img src="logo.png"
+style="
+height:60px;
+width:auto;
+object-fit:contain;">
+<h2>Subtes 3 : Pengetahuan Umum</h2>
+</div>
+
+<div class="timer-box">
+
+<div id="timer">00:07:00</div>
+
+<div class="timer-text">
+Waktu Tersisa
+</div>
+
+</div>
+
+</div>
+
+<div class="container">
+
+<!-- LEFT -->
+
+<div class="left-panel">
+
+<h3>NOMOR SOAL</h3>
+
+<div class="nav-grid" id="nav"></div>
+
+</div>
+
+<!-- CENTER -->
+
+<div class="center-panel">
+
+<div class="question-box">
+
+<div class="question-title" id="question">
+Memuat soal...
+</div>
+
+<div id="options"></div>
+<div class="btn-area">
+
+<button class="btn next" onclick="next()">
+Simpan & Lanjut
+</button>
+
+<button class="btn prev" onclick="prev()">
+Sebelumnya
+</button>
+
+<button class="btn finish"
+onclick="finish()">
+Akhiri Tes
+</button>
+
+</div>
+</div>
+
+<div id="hasilPanel" style="display:none">
+
+<div class="card">
+
+<h3>RINGKASAN NILAI</h3>
+
+<div class="score-box">
+
+<div class="score-card green">
+BENAR
+<h1 id="benarBox">0</h1>
+<div id="benarPersen">0%</div>
+</div>
+
+<div class="score-card red">
+SALAH
+<h1 id="salahBox">0</h1>
+<div id="salahPersen">0%</div>
+</div>
+
+<div class="score-card orange">
+KOSONG
+<h1 id="kosongBox">0</h1>
+<div id="kosongPersen">0%</div>
+</div>
+
+</div>
+
+<canvas id="chart"></canvas>
+
+<div class="result-list">
+
+<div style="color:green;font-weight:bold">
+Nomor Benar:
+</div>
+
+<div id="listBenar"></div>
+
+<br>
+
+<div style="color:red;font-weight:bold">
+Nomor Salah:
+</div>
+
+<div id="listSalah"></div>
+
+<br>
+
+<div style="color:orange;font-weight:bold">
+Nomor Kosong:
+</div>
+
+<div id="listKosong"></div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- RIGHT -->
+
+<div class="right-panel" id="rightPanel" style="display:none">
+
+<div class="card">
+
+<h3>🏆 PENCAPAIAN NILAI</h3>
+
+<div style="
+font-size:50px;
+text-align:center;
+margin:20px 0;">
+🏆
+</div>
+
+<div style="
+text-align:center;
+font-size:22px;
+font-weight:bold;
+color:#1976d2;">
+SKOR ANDA
+</div>
+
+<div id="yourScore"
+style="
+text-align:center;
+font-size:38px;
+font-weight:bold;
+margin-top:10px;
+color:#2e7d32;">
+0/40
+</div>
+
+</div> <!-- tutup card -->
+</div> <!-- tutup right-panel -->
+</div> <!-- tutup container -->
+
+<div class="watermark">
+property by @mas8ar • property by @mas8ar • property by @mas8ar • property by @mas8ar
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+
+import {
+getFirestore,
+collection,
+getDocs
+} from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+/* FIREBASE */
+
+const firebaseConfig = {
+  apiKey: "AIza....",
+  authDomain: "cat-kopdes.firebaseapp.com",
+  projectId: "cat-kopdes"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+/* STATE */
+
+let soal = [];
+let current = 0;
+let jawaban = [];
+
+let waktu = 420;
+
+/* TIMER */
+
+let timerInterval;
+
+function startTimer(){
+
+timerInterval = setInterval(()=>{
+
+let menit = Math.floor(waktu/60);
+let detik = waktu%60;
+
+document.getElementById("timer").innerHTML =
+`00:${String(menit).padStart(2,'0')}:${String(detik).padStart(2,'0')}`;
+
+waktu--;
+
+if(waktu < 0){
+
+alert("Waktu habis");
+finish();
+
+}
+
+},1000);
+
+}
+
+/* LOAD */
+
+async function loadSoal(){
+
+const snapshot = await getDocs(collection(db,"bank_soal"));
+
+let semua = [];
+
+snapshot.forEach(doc=>{
+
+semua.push(doc.data());
+
+});
+
+soal = semua.sort(()=>Math.random()-0.5).slice(0,40);
+
+jawaban = Array(soal.length).fill(null);
+
+renderNav();
+
+tampil();
+
+updateDashboard();
+
+startTimer();
+
+}
+
+loadSoal();
+
+/* NAV */
+
+function renderNav(){
+
+let html="";
+
+for(let i=0;i<40;i++){
+
+let cls="";
+
+if(i===current) cls="active";
+
+if(jawaban[i]!=null) cls="done";
+
+html += `
+<button class="${cls}"
+onclick="go(${i})">
+${i+1}
+</button>
+`;
+
+}
+
+document.getElementById("nav").innerHTML = html;
+
+}
+
+/* TAMPIL */
+
+function tampil(){
+
+let s = soal[current];
+
+document.getElementById("question").innerHTML =
+`${current+1}. ${s.q}`;
+
+let html="";
+
+s.a.forEach((o,i)=>{
+
+let selected = jawaban[current]==i ? "selected" : "";
+
+html += `
+<div class="option ${selected}"
+onclick="pilih(${i})">
+<b>${String.fromCharCode(65+i)}.</b> ${o}
+</div>
+`;
+
+});
+
+document.getElementById("options").innerHTML = html;
+
+}
+
+/* PILIH */
+
+window.pilih = function(i){
+
+jawaban[current]=i;
+
+renderNav();
+
+tampil();
+
+updateDashboard();
+
+}
+
+/* NAVIGATION */
+
+window.go = function(i){
+
+current=i;
+
+renderNav();
+
+tampil();
+
+}
+
+window.next = function(){
+
+if(current<39){
+
+current++;
+
+renderNav();
+
+tampil();
+
+}
+
+}
+
+window.prev = function(){
+
+if(current>0){
+
+current--;
+
+renderNav();
+
+tampil();
+
+}
+
+}
+
+/* DASHBOARD */
+
+let chart;
+
+function updateDashboard(){
+
+let benar=0;
+let salah=0;
+let kosong=0;
+
+let listBenar=[];
+let listSalah=[];
+let listKosong=[];
+
+soal.forEach((s,i)=>{
+
+if(jawaban[i]==null){
+
+kosong++;
+listKosong.push(i+1);
+
+}
+
+else if(jawaban[i]==s.k){
+
+benar++;
+listBenar.push(i+1);
+
+}
+
+else{
+
+salah++;
+listSalah.push(i+1);
+
+}
+
+});
+
+document.getElementById("benarBox").innerHTML=benar;
+document.getElementById("salahBox").innerHTML=salah;
+document.getElementById("kosongBox").innerHTML=kosong;
+
+document.getElementById("yourScore").innerHTML =
+`${benar}/40`;
+
+let pb = ((benar/40)*100).toFixed(0);
+let ps = ((salah/40)*100).toFixed(0);
+let pk = ((kosong/40)*100).toFixed(0);
+
+document.getElementById("benarPersen").innerHTML = pb+"%";
+document.getElementById("salahPersen").innerHTML = ps+"%";
+document.getElementById("kosongPersen").innerHTML = pk+"%";
+
+document.getElementById("listBenar").innerHTML =
+listBenar.join(", ");
+
+document.getElementById("listSalah").innerHTML =
+listSalah.join(", ");
+
+document.getElementById("listKosong").innerHTML =
+listKosong.join(", ");
+
+if(chart) chart.destroy();
+
+chart = new Chart(document.getElementById("chart"),{
+
+type:'doughnut',
+
+data:{
+
+labels:['Benar','Salah','Kosong'],
+
+datasets:[{
+
+data:[benar,salah,kosong],
+
+backgroundColor:[
+'#4caf50',
+'#e53935',
+'#fb8c00'
+]
+
+}]
+
+}
+
+});
+
+}
+
+/* FINISH */
+
+window.finish = function(){
+
+clearInterval(timerInterval);
+
+updateDashboard();
+
+/* tampilkan hasil */
+
+document.getElementById("hasilPanel").style.display="block";
+
+document.getElementById("rightPanel").style.display="flex";
+
+/* scroll ke hasil */
+
+document.getElementById("hasilPanel")
+.scrollIntoView({
+behavior:"smooth"
+});
+
+alert("Tes selesai");
+
+}
+
+</script>
+
+</body>
+</html>
